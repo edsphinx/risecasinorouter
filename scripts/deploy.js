@@ -1,7 +1,8 @@
 /**
  * @title Deploy Uniswap V2 Router02
- * @notice Deploys UniswapV2Router02 to Rise Testnet
+ * @notice Deploys UniswapV2Router02 to Rise Testnet or Monad Testnet
  * @dev Run: npx hardhat run scripts/deploy.js --network rise_testnet
+ *      Or:  npx hardhat run scripts/deploy.js --network monad_testnet
  * 
  * IMPORTANT: You must first deploy the Factory and get the INIT_CODE_HASH
  * Then update the UniswapV2Library.sol with the correct hash!
@@ -31,7 +32,15 @@ async function main() {
     console.log("WETH:", wethAddress);
 
     const UniswapV2Router02 = await hre.ethers.getContractFactory("UniswapV2Router02");
-    const router = await UniswapV2Router02.deploy(factoryAddress, wethAddress);
+
+    // Deploy with explicit gas settings for Monad testnet
+    const deployOptions = {
+        gasLimit: 6000000,  // 6M gas limit
+        gasPrice: hre.ethers.utils.parseUnits("100", "gwei")  // 100 gwei
+    };
+
+    console.log("Gas settings:", deployOptions);
+    const router = await UniswapV2Router02.deploy(factoryAddress, wethAddress, deployOptions);
     await router.deployed();
 
     console.log("UniswapV2Router02 deployed to:", router.address);
